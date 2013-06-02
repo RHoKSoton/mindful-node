@@ -10,6 +10,7 @@ var client = mpd.connect({
 });
 client.on('ready', function() {
   console.log("We are ready to receive music");
+  controls.changevol();
   emitter.emit("ready");
 });
 client.on('system', function(name) {
@@ -25,10 +26,40 @@ client.on('system-player', function() {
   });
 });
 
+function getSongId(cb){
+  client.sendCommand(cmd("currentsong",[]),function(err,msg){
+    id = msg.match(/\nId: (.*?)\n/i)[1];
+    console.log("Song id is "+id+".");
+    cb(id);
+  });
+}
+
+
 // Is the same song playing?
 var same = 0;
-
+var currId = -1;
+var vol = 100;
 var controls = new Object();
+
+
+controls.volumeUpPressed = function(){
+  if (vol < 100) {
+   vol = vol + 5;
+   this.changevol();
+   }
+};
+
+controls.volumeDownPressed = function(){
+  if (vol > 0) {
+    vol = vol - 5;
+    this.changevol();
+  }
+};
+
+controls.changevol = function(){
+  console.log("Setting volume to: "+vol);
+  client.sendCommand(cmd("setvol", [vol]));
+};
 
 controls.play = function(){
   client.sendCommand("play");
@@ -58,14 +89,19 @@ controls.happyPressed = function(){
   });
 };
 
-controls.skipPressed = function(){
+controls.skip = function(){
   client.sendCommand("next");
   console.log("Skipping");
+  same = 0;
 };
 
+controls.skipPressed = function(){
+  this.skip();
+};
 
-
-
+emitter.on("status", function(msg) {
+  console.log(msg);
+});
 controls.events = emitter;
 
 module.exports = controls;

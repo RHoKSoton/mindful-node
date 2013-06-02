@@ -25,26 +25,47 @@ client.on('system-player', function() {
   });
 });
 
+// Is the same song playing?
+var same = 0;
+
 var controls = new Object();
 
 controls.play = function(){
   client.sendCommand("play");
-}
+};
+
 controls.pause = function(){
-  client.sendCommant("stop");
-}
+  client.sendCommand(cmd("pause", [1]));
+};
+
+controls.stop = function(){
+  client.sendCommand("stop");
+};
+
+controls.toggle = function(){
+  client.sendCommand("pause");
+};
+
 controls.happyPressed = function(){
-  var song = "song name here";
-  console.log("We are happy while "+song+" is playing.");
-}
+  if(same) return;
+  var song = "N";
+  client.sendCommand(cmd("currentsong",[]),function(err,msg){
+    if(err) throw err;
+    song = msg.match(/\nTitle: (.*?)\n/i)[1];
+    console.log("We are happy while "+song+" is playing.");
+    emitter.emit("happy",song);
+    same = 1;
+  });
+};
+
 controls.skipPressed = function(){
   client.sendCommand("next");
   console.log("Skipping");
-}
+};
 
 
 
 
 controls.events = emitter;
 
-module.export = controls;
+module.exports = controls;

@@ -12,6 +12,10 @@ client.on('ready', function() {
   console.log("We are ready to receive music");
   controls.changevol();
   emitter.emit("ready");
+  emitter.on("status", function(msg) {
+    //console.log(msg);
+    same = 0;
+  });
 });
 client.on('system', function(name) {
   console.log("update", name);
@@ -102,9 +106,3 @@ controls.skipPressed = function(){
 controls.events = emitter;
 
 module.exports = controls;
-
-
-controls.events.on("status", function(msg) {
-  //console.log(msg);
-  same = 0;
-});

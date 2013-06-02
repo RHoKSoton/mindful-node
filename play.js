@@ -25,9 +25,15 @@ client.on('system-player', function() {
   if(err){
     emitter.emit("error",err);
   }else{
-    emitter.emit("status",msg);
+    getSong(function(song){
+      msg += "\ntitle: "+song;
+      emitter.emit("status",msg);
+    });
   }
   });
+});
+client.on('system-mixer', function(){
+
 });
 
 function getSongId(cb){
@@ -38,7 +44,23 @@ function getSongId(cb){
   });
 }
 
+function getVol(cb){
+  client.sendCommand(cmd("currentsong",[]),function(err,msg){
+    var volume = msg.match(/\nvolume: (.*?)\n/i)[1];
+    try{
+      vol = parseInt(volume,10);
+      cb(vol);
+    }catch(e){throw e;}
+  });
+}
 
+function getSong(cb){
+  client.sendCommand(cmd("currentsong",[]),function(err,msg){
+    if(err) throw err;
+    song = msg.match(/\nTitle: (.*?)\n/i)[1];
+    cb(song);
+  });
+}
 // Is the same song playing?
 var same = 0;
 var currId = -1;
@@ -84,9 +106,7 @@ controls.toggle = function(){
 controls.happyPressed = function(){
   if(same) return;
   var song = "N";
-  client.sendCommand(cmd("currentsong",[]),function(err,msg){
-    if(err) throw err;
-    song = msg.match(/\nTitle: (.*?)\n/i)[1];
+  getSong(function(song){
     console.log("We are happy while "+song+" is playing.");
     emitter.emit("happy",song);
     same = 1;
@@ -101,6 +121,16 @@ controls.skip = function(){
 
 controls.skipPressed = function(){
   this.skip();
+};
+
+controls.getStatus = function(cb){
+  client.sendCommand(cmd("status",[]),function(err,msg){
+    if(err) throw err;
+    getSong(function(){
+      msg += "\ntitle: "+song;
+      cb(msg);
+    });
+  });
 };
 
 controls.events = emitter;

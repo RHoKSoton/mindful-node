@@ -99,9 +99,12 @@ controls.skipPressed = function(){
   this.skip();
 };
 
-emitter.on("status", function(msg) {
-  console.log(msg);
-});
 controls.events = emitter;
 
 module.exports = controls;
+
+
+controls.events.on("status", function(msg) {
+  //console.log(msg);
+  same = 0;
+});

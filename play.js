@@ -33,7 +33,9 @@ client.on('system-player', function() {
   });
 });
 client.on('system-mixer', function(){
-
+  getVol(function(volume){
+    emitter.emit("volume",volume);
+  });
 });
 
 function getSongId(cb){
@@ -85,6 +87,7 @@ controls.volumeDownPressed = function(){
 controls.changevol = function(){
   console.log("Setting volume to: "+vol);
   client.sendCommand(cmd("setvol", [vol]));
+  emitter.emit("status","volume: "+vol);
 };
 
 controls.play = function(){
